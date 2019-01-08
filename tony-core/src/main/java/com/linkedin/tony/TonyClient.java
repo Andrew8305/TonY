@@ -41,6 +41,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
@@ -469,7 +470,12 @@ public class TonyClient implements AutoCloseable {
    */
   private void addLocalResources(FileSystem fs, String srcPath, LocalResourceType resourceType,
                                  String dstPath, Map<String, LocalResource> localResources) throws IOException {
+    Path src = new Path(srcPath);  // gs://  --> GsFileSystem, file:// --> local, /foo --> defaultFs
+    FileSystem srcFs = src.getFileSystem(hdfsConf);
     Path dst = new Path(appResourcesPath, dstPath);
+    FileSystem dstFs = dst.getFileSystem(hdfsConf);
+
+    FileUtil.copy(srcFs, src, dstFs, dst, false, true, hdfsConf);
     fs.copyFromLocalFile(new Path(srcPath), dst);
     fs.setPermission(dst, new FsPermission((short) 0770));
     FileStatus scFileStatus = fs.getFileStatus(dst);

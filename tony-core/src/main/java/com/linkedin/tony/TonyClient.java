@@ -476,7 +476,7 @@ public class TonyClient implements AutoCloseable {
     FileSystem dstFs = dst.getFileSystem(hdfsConf);
 
     FileUtil.copy(srcFs, src, dstFs, dst, false, true, hdfsConf);
-    fs.copyFromLocalFile(new Path(srcPath), dst);
+//    fs.copyFromLocalFile(new Path(srcPath), dst);
     fs.setPermission(dst, new FsPermission((short) 0770));
     FileStatus scFileStatus = fs.getFileStatus(dst);
     LocalResource scRsrc =
@@ -661,8 +661,13 @@ public class TonyClient implements AutoCloseable {
 
   private void uploadFileAndSetConfResources(Path hdfsPath, Path filePath,
       String fileName, Configuration tonyConf, FileSystem fs) throws IOException {
+    FileSystem srcFs = filePath.getFileSystem(hdfsConf);
+
     Path dst = new Path(hdfsPath, fileName);
-    fs.copyFromLocalFile(filePath, dst);
+    FileSystem dstFs = dst.getFileSystem(hdfsConf);
+
+    FileUtil.copy(srcFs, filePath, dstFs, dst, false, true, hdfsConf);
+//    fs.copyFromLocalFile(filePath, dst);
     fs.setPermission(dst, new FsPermission((short) 0770));
     appendConfResources(TonyConfigurationKeys.getContainerResourcesKey(), dst.toString(), tonyConf);
   }
